@@ -225,7 +225,7 @@ main.wrap {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 168px minmax(0, 1.08fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
   gap: 18px;
   align-items: stretch;
 }
@@ -336,9 +336,22 @@ textarea:focus {
   min-height: 36px;
 }
 
-.foot-left {
+.foot-left,
+.foot-right {
   display: flex;
+  align-items: center;
   gap: 6px;
+}
+
+.foot-right {
+  gap: 10px;
+  min-width: 0;
+}
+
+.foot-right .hint {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .hint {
@@ -347,8 +360,7 @@ textarea:focus {
 }
 
 .primary,
-.ghost,
-.swap-btn {
+.ghost {
   font-family: var(--font-sans);
   cursor: pointer;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, color 0.18s ease;
@@ -396,45 +408,6 @@ textarea:focus {
   border-color: color-mix(in srgb, var(--accent) 60%, var(--card-border-strong));
   color: var(--accent);
   transform: translateY(-1px);
-}
-
-.switcher {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 40px 0;
-}
-
-.switch-line {
-  flex: 1;
-  width: 1px;
-  background: linear-gradient(to bottom, transparent, var(--card-border-strong), transparent);
-}
-
-.swap-btn {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  border: 1px solid var(--card-border-strong);
-  background: var(--card);
-  color: var(--accent);
-  font-size: 16px;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
-}
-
-.swap-btn:hover {
-  transform: rotate(180deg);
-  border-color: var(--accent);
-}
-
-.switch-label {
-  color: var(--muted);
-  font-size: 12px;
-  letter-spacing: 2px;
-  writing-mode: vertical-rl;
 }
 
 .meta {
@@ -619,23 +592,6 @@ textarea:focus {
   .workspace {
     grid-template-columns: 1fr;
     gap: 12px;
-  }
-
-  .switcher {
-    flex-direction: row;
-    justify-content: center;
-    padding: 0;
-    gap: 14px;
-  }
-
-  .switch-line,
-  .switch-label {
-    display: none;
-  }
-
-  .swap-btn {
-    width: 42px;
-    height: 42px;
   }
 
   textarea {

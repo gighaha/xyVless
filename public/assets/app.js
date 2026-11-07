@@ -621,7 +621,6 @@ if (typeof document !== 'undefined') {
       btnClearJson: document.getElementById('btnClearJson'),
       btnLinkToJson: document.getElementById('btnLinkToJson'),
       btnJsonToLink: document.getElementById('btnJsonToLink'),
-      btnSwap: document.getElementById('btnSwap'),
       btnFormatJson: document.getElementById('btnFormatJson'),
       btnCopyJson: document.getElementById('btnCopyJson'),
       btnDownloadJson: document.getElementById('btnDownloadJson'),
@@ -838,15 +837,6 @@ if (typeof document !== 'undefined') {
       linkGenerated = false;
       dom.jsonStatus.textContent = '等待转换';
       dom.metaSection.hidden = true;
-    });
-
-    dom.btnSwap.addEventListener('click', () => {
-      const link = dom.linkInput.value;
-      dom.linkInput.value = dom.jsonBox.value;
-      dom.jsonBox.value = link;
-      linkGenerated = false;
-      dom.metaSection.hidden = true;
-      dom.jsonStatus.textContent = '已交换内容';
     });
 
     dom.btnFormatJson.addEventListener('click', formatJson);

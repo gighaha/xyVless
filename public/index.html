@@ -53,16 +53,6 @@
       </footer>
     </section>
 
-    <div class="switcher">
-      <span class="switch-line" aria-hidden="true"></span>
-      <button class="swap-btn" id="btnSwap" type="button" title="交换两侧内容" aria-label="交换两侧内容">
-        <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
-      </button>
-      <span class="switch-label">双向转换</span>
-      <button class="ghost" id="btnJsonToLink" type="button"><i class="fa-solid fa-arrow-left-long" aria-hidden="true"></i> 转为链接</button>
-      <span class="switch-line" aria-hidden="true"></span>
-    </div>
-
     <section class="panel card" aria-labelledby="jsonTitle">
       <header class="panel-head">
         <h2 id="jsonTitle"><i class="fa-solid fa-code" aria-hidden="true"></i> Xray config.json</h2>
@@ -77,7 +67,10 @@
           <button class="mini" id="btnCopyJson" type="button"><i class="fa-solid fa-copy" aria-hidden="true"></i> 复制</button>
           <button class="mini" id="btnDownloadJson" type="button"><i class="fa-solid fa-download" aria-hidden="true"></i> 下载</button>
         </div>
-        <span class="hint" id="jsonStatus">等待转换</span>
+        <div class="foot-right">
+          <span class="hint" id="jsonStatus">等待转换</span>
+          <button class="ghost" id="btnJsonToLink" type="button"><i class="fa-solid fa-arrow-left-long" aria-hidden="true"></i> 转为链接</button>
+        </div>
       </footer>
     </section>
   </div>
