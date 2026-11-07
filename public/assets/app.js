@@ -711,7 +711,8 @@ if (typeof document !== 'undefined') {
 
     function linkToConfig(silent) {
       try {
-        const result = VlessConverter.buildXrayConfig(dom.linkInput.value, readOptions());
+        const link = dom.linkInput.value.trim() || SAMPLE_LINK;
+        const result = VlessConverter.buildXrayConfig(link, readOptions());
         const json = JSON.stringify(result.config, null, 2);
         dom.jsonBox.value = json;
         lastRemark = result.remark || '';
