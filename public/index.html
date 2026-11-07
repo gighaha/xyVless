@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>VLESS ⇄ Xray 配置转换器</title>
+<meta name="description" content="VLESS 分享链接与 Xray config.json 双向转换，支持 Reality / TLS / WS / gRPC / XHTTP，纯前端本地解析。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23050912'/%3E%3Cpath d='M18 24h26m0 0-8-8m8 8-8 8M46 40H20m0 0 8-8m-8 8 8 8' fill='none' stroke='%2322d3ee' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="./assets/style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="./">
+      <span class="brand-mark"><i class="fa-solid fa-right-left" aria-hidden="true"></i></span>
+      <span class="brand-text">
+        <strong>VLESS <span class="brand-x">⇄</span> Xray</strong>
+        <small>链接与 config.json 双向转换</small>
+      </span>
+    </a>
+    <div class="header-actions">
+      <span class="pill"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> 纯前端</span>
+      <button id="themeToggle" class="icon-btn" type="button" aria-label="切换主题" title="切换主题">
+        <i class="fa-solid fa-moon" id="themeIcon" aria-hidden="true"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="lede">粘贴 VLESS 分享链接即可生成完整的 Xray 客户端配置；也可以粘贴已有 config.json 还原分享链接。所有解析都在浏览器本地完成。</p>
+
+  <div class="alert" id="alert" hidden>
+    <i class="fa-solid fa-circle-check" id="alertIcon" aria-hidden="true"></i>
+    <span id="alertText"></span>
+  </div>
+
+  <div class="workspace">
+    <section class="panel card" aria-labelledby="linkTitle">
+      <header class="panel-head">
+        <h2 id="linkTitle"><i class="fa-solid fa-link" aria-hidden="true"></i> VLESS 链接</h2>
+        <div class="panel-tools">
+          <button class="mini" id="btnSample" type="button"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i> 示例</button>
+          <button class="mini" id="btnClearLink" type="button"><i class="fa-solid fa-eraser" aria-hidden="true"></i> 清空</button>
+        </div>
+      </header>
+      <textarea id="linkInput" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="vless://uuid@43.213.64.132:62045?encryption=none&amp;security=reality&amp;flow=xtls-rprx-vision&amp;type=tcp&amp;sni=dash.cloudflare.com&amp;pbk=...&amp;fp=chrome#备注"></textarea>
+      <footer class="panel-foot">
+        <span class="hint">Ctrl + Enter 快速转换</span>
+        <button class="primary" id="btnLinkToJson" type="button"><i class="fa-solid fa-arrow-right-long" aria-hidden="true"></i> 转为配置</button>
+      </footer>
+    </section>
+
+    <div class="switcher">
+      <span class="switch-line" aria-hidden="true"></span>
+      <button class="swap-btn" id="btnSwap" type="button" title="交换两侧内容" aria-label="交换两侧内容">
+        <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
+      </button>
+      <span class="switch-label">双向转换</span>
+      <button class="ghost" id="btnJsonToLink" type="button"><i class="fa-solid fa-arrow-left-long" aria-hidden="true"></i> 转为链接</button>
+      <span class="switch-line" aria-hidden="true"></span>
+    </div>
+
+    <section class="panel card" aria-labelledby="jsonTitle">
+      <header class="panel-head">
+        <h2 id="jsonTitle"><i class="fa-solid fa-code" aria-hidden="true"></i> Xray config.json</h2>
+        <div class="panel-tools">
+          <button class="mini" id="btnFormatJson" type="button"><i class="fa-solid fa-align-left" aria-hidden="true"></i> 格式化</button>
+          <button class="mini" id="btnClearJson" type="button"><i class="fa-solid fa-eraser" aria-hidden="true"></i> 清空</button>
+        </div>
+      </header>
+      <textarea id="jsonBox" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="粘贴 Xray 客户端配置（含 outbounds），或仅粘贴 vless 出站对象。"></textarea>
+      <footer class="panel-foot">
+        <div class="foot-left">
+          <button class="mini" id="btnCopyJson" type="button"><i class="fa-solid fa-copy" aria-hidden="true"></i> 复制</button>
+          <button class="mini" id="btnDownloadJson" type="button"><i class="fa-solid fa-download" aria-hidden="true"></i> 下载</button>
+        </div>
+        <span class="hint" id="jsonStatus">等待转换</span>
+      </footer>
+    </section>
+  </div>
+
+  <section class="meta card" id="metaSection" hidden>
+    <h2><i class="fa-solid fa-list-check" aria-hidden="true"></i> 解析结果</h2>
+    <div class="meta-grid" id="metaGrid"></div>
+  </section>
+
+  <footer class="site-footer">本地解析 · 不采集、不上传任何链接内容 · 适用于 Xray-core</footer>
+</main>
+
+<script src="./assets/app.js"></script>
+</body>
+</html>
