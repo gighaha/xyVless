@@ -82,6 +82,33 @@
     </section>
   </div>
 
+  <section class="card options" aria-labelledby="optTitle">
+    <h2 id="optTitle"><i class="fa-solid fa-sliders" aria-hidden="true"></i> 生成选项</h2>
+    <div class="opt-grid">
+      <label class="opt">
+        <input type="checkbox" id="optMixed" checked>
+        <span class="opt-text">
+          <strong>端口混合</strong>
+          <small>追加 127.0.0.1:7890 混合入站（HTTP + SOCKS，开启 UDP）</small>
+        </span>
+      </label>
+      <label class="opt">
+        <input type="checkbox" id="optSniffing">
+        <span class="opt-text">
+          <strong>流量嗅探</strong>
+          <small>启用 sniffing，识别 http / tls / quic 目标</small>
+        </span>
+      </label>
+      <label class="opt">
+        <input type="checkbox" id="optLanDirect">
+        <span class="opt-text">
+          <strong>内网直连</strong>
+          <small>geoip:private 走 direct，其余流量走代理</small>
+        </span>
+      </label>
+    </div>
+  </section>
+
   <section class="meta card" id="metaSection" hidden>
     <h2><i class="fa-solid fa-list-check" aria-hidden="true"></i> 解析结果</h2>
     <div class="meta-grid" id="metaGrid"></div>

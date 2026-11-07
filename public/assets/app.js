@@ -1,12 +1,9 @@
 'use strict';
 
 const VlessConverter = (function () {
-  const PRIVATE_NETS = [
-    '127.0.0.0/8', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16',
-    '169.254.0.0/16', '::1/128', 'fc00::/7', 'fe80::/10'
-  ];
   const NETWORKS = new Set(['tcp', 'ws', 'grpc', 'http', 'httpupgrade', 'xhttp', 'kcp', 'quic']);
   const SECURITIES = new Set(['none', 'tls', 'reality', 'xtls']);
+  const OPTION_DEFAULTS = { mixed: true, sniffing: false, lanDirect: false };
 
   function decodeComponent(value) {
     try {
@@ -276,8 +273,18 @@ const VlessConverter = (function () {
     return items.filter((item) => item.value !== '' && item.value !== undefined && item.value !== null);
   }
 
-  function buildXrayConfig(input) {
+  function resolveOptions(options) {
+    const source = options && typeof options === 'object' ? options : {};
+    const resolved = {};
+    for (const key of Object.keys(OPTION_DEFAULTS)) {
+      resolved[key] = source[key] === undefined ? OPTION_DEFAULTS[key] : Boolean(source[key]);
+    }
+    return resolved;
+  }
+
+  function buildXrayConfig(input, options) {
     const parsed = typeof input === 'string' ? parseVlessLink(input) : input;
+    const opts = resolveOptions(options);
 
     const user = { id: parsed.uuid, encryption: parsed.encryption || 'none' };
     if (parsed.flow) user.flow = parsed.flow;
@@ -296,32 +303,49 @@ const VlessConverter = (function () {
       streamSettings: buildStreamSettings(parsed)
     };
 
+    const inbounds = [{
+      tag: 'socks-in',
+      listen: '127.0.0.1',
+      port: 10808,
+      protocol: 'socks',
+      settings: { auth: 'noauth', udp: true }
+    }];
+
+    if (opts.mixed) {
+      inbounds.push({
+        tag: 'mixed-in',
+        port: 7890,
+        listen: '127.0.0.1',
+        protocol: 'mixed',
+        settings: { udp: true }
+      });
+    }
+
+    if (opts.sniffing) {
+      for (const inbound of inbounds) {
+        inbound.sniffing = { enabled: true, destOverride: ['http', 'tls', 'quic'] };
+      }
+    }
+
     const config = {
       log: { loglevel: 'warning' },
-      inbounds: [{
-        tag: 'socks-in',
-        listen: '127.0.0.1',
-        port: 10808,
-        protocol: 'socks',
-        settings: { auth: 'noauth', udp: true },
-        sniffing: {
-          enabled: true,
-          destOverride: ['http', 'tls', 'quic'],
-          routeOnly: true
-        }
-      }],
+      inbounds,
       outbounds: [
         outbound,
         { tag: 'direct', protocol: 'freedom' },
         { tag: 'block', protocol: 'blackhole' }
-      ],
-      routing: {
+      ]
+    };
+
+    if (opts.lanDirect) {
+      config.routing = {
         domainStrategy: 'IPIfNonMatch',
         rules: [
-          { type: 'field', ip: PRIVATE_NETS, outboundTag: 'direct' }
+          { type: 'field', ip: ['geoip:private'], outboundTag: 'direct' },
+          { type: 'field', network: 'tcp,udp', outboundTag: outbound.tag }
         ]
-      }
-    };
+      };
+    }
 
     return { config, meta: buildMeta(parsed), remark: parsed.remark };
   }
@@ -590,7 +614,10 @@ if (typeof document !== 'undefined') {
       btnSwap: document.getElementById('btnSwap'),
       btnFormatJson: document.getElementById('btnFormatJson'),
       btnCopyJson: document.getElementById('btnCopyJson'),
-      btnDownloadJson: document.getElementById('btnDownloadJson')
+      btnDownloadJson: document.getElementById('btnDownloadJson'),
+      optMixed: document.getElementById('optMixed'),
+      optSniffing: document.getElementById('optSniffing'),
+      optLanDirect: document.getElementById('optLanDirect')
     };
 
     let alertTimer = 0;
@@ -648,9 +675,17 @@ if (typeof document !== 'undefined') {
       dom.jsonStatus.textContent = text;
     }
 
+    function readOptions() {
+      return {
+        mixed: dom.optMixed.checked,
+        sniffing: dom.optSniffing.checked,
+        lanDirect: dom.optLanDirect.checked
+      };
+    }
+
     function linkToConfig() {
       try {
-        const result = VlessConverter.buildXrayConfig(dom.linkInput.value);
+        const result = VlessConverter.buildXrayConfig(dom.linkInput.value, readOptions());
         const json = JSON.stringify(result.config, null, 2);
         dom.jsonBox.value = json;
         lastRemark = result.remark || '';
