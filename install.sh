@@ -6,7 +6,7 @@
 
 set -euo pipefail
 
-VLESS_PORT=444
+VLESS_PORT=44300
 XRAY_DIR="/usr/local/etc/xray"
 XRAY_BIN="/usr/local/bin/xray"
 SERVICE_FILE="/etc/systemd/system/xray.service"
