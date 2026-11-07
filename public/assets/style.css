@@ -484,6 +484,15 @@ textarea:focus {
   border-color: var(--card-border-strong);
 }
 
+.opt.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.opt.is-disabled input[type="checkbox"] {
+  cursor: not-allowed;
+}
+
 .opt input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;

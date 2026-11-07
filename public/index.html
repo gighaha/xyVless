@@ -89,7 +89,28 @@
         <input type="checkbox" id="optMixed" checked>
         <span class="opt-text">
           <strong>端口混合</strong>
-          <small>追加 127.0.0.1:7890 混合入站（HTTP + SOCKS，开启 UDP）</small>
+          <small>127.0.0.1:7890 混合入站（HTTP + SOCKS，开启 UDP），开启后不再需要 SOCKS 入站</small>
+        </span>
+      </label>
+      <label class="opt" id="optSocksRow">
+        <input type="checkbox" id="optSocks">
+        <span class="opt-text">
+          <strong>SOCKS 入站</strong>
+          <small>127.0.0.1:10808 独立 SOCKS 入站</small>
+        </span>
+      </label>
+      <label class="opt" id="optDirectRow">
+        <input type="checkbox" id="optDirect">
+        <span class="opt-text">
+          <strong>直连出站</strong>
+          <small>追加 freedom 出站（tag: direct）</small>
+        </span>
+      </label>
+      <label class="opt">
+        <input type="checkbox" id="optBlock">
+        <span class="opt-text">
+          <strong>屏蔽出站</strong>
+          <small>追加 blackhole 出站（tag: block）</small>
         </span>
       </label>
       <label class="opt">

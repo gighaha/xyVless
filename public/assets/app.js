@@ -3,7 +3,9 @@
 const VlessConverter = (function () {
   const NETWORKS = new Set(['tcp', 'ws', 'grpc', 'http', 'httpupgrade', 'xhttp', 'kcp', 'quic']);
   const SECURITIES = new Set(['none', 'tls', 'reality', 'xtls']);
-  const OPTION_DEFAULTS = { mixed: true, sniffing: false, lanDirect: false };
+  const OPTION_DEFAULTS = {
+    mixed: true, socks: false, direct: false, block: false, sniffing: false, lanDirect: false
+  };
 
   function decodeComponent(value) {
     try {
@@ -303,13 +305,7 @@ const VlessConverter = (function () {
       streamSettings: buildStreamSettings(parsed)
     };
 
-    const inbounds = [{
-      tag: 'socks-in',
-      listen: '127.0.0.1',
-      port: 10808,
-      protocol: 'socks',
-      settings: { auth: 'noauth', udp: true }
-    }];
+    const inbounds = [];
 
     if (opts.mixed) {
       inbounds.push({
@@ -319,6 +315,14 @@ const VlessConverter = (function () {
         protocol: 'mixed',
         settings: { udp: true }
       });
+    } else if (opts.socks) {
+      inbounds.push({
+        tag: 'socks-in',
+        listen: '127.0.0.1',
+        port: 10808,
+        protocol: 'socks',
+        settings: { auth: 'noauth', udp: true }
+      });
     }
 
     if (opts.sniffing) {
@@ -327,14 +331,18 @@ const VlessConverter = (function () {
       }
     }
 
+    const outbounds = [outbound];
+    if (opts.direct || opts.lanDirect) {
+      outbounds.push({ tag: 'direct', protocol: 'freedom' });
+    }
+    if (opts.block) {
+      outbounds.push({ tag: 'block', protocol: 'blackhole' });
+    }
+
     const config = {
       log: { loglevel: 'warning' },
       inbounds,
-      outbounds: [
-        outbound,
-        { tag: 'direct', protocol: 'freedom' },
-        { tag: 'block', protocol: 'blackhole' }
-      ]
+      outbounds
     };
 
     if (opts.lanDirect) {
@@ -616,12 +624,18 @@ if (typeof document !== 'undefined') {
       btnCopyJson: document.getElementById('btnCopyJson'),
       btnDownloadJson: document.getElementById('btnDownloadJson'),
       optMixed: document.getElementById('optMixed'),
+      optSocks: document.getElementById('optSocks'),
+      optSocksRow: document.getElementById('optSocksRow'),
+      optDirect: document.getElementById('optDirect'),
+      optDirectRow: document.getElementById('optDirectRow'),
+      optBlock: document.getElementById('optBlock'),
       optSniffing: document.getElementById('optSniffing'),
       optLanDirect: document.getElementById('optLanDirect')
     };
 
     let alertTimer = 0;
     let lastRemark = '';
+    let linkGenerated = false;
 
     function applyTheme(theme) {
       document.documentElement.dataset.theme = theme;
@@ -676,25 +690,49 @@ if (typeof document !== 'undefined') {
     }
 
     function readOptions() {
+      const mixed = dom.optMixed.checked;
       return {
-        mixed: dom.optMixed.checked,
+        mixed,
+        socks: !mixed && dom.optSocks.checked,
+        direct: dom.optDirect.checked,
+        block: dom.optBlock.checked,
         sniffing: dom.optSniffing.checked,
         lanDirect: dom.optLanDirect.checked
       };
     }
 
-    function linkToConfig() {
+    function syncOptionState() {
+      const mixed = dom.optMixed.checked;
+      dom.optSocks.disabled = mixed;
+      dom.optSocksRow.classList.toggle('is-disabled', mixed);
+      dom.optSocksRow.title = mixed ? '端口混合已开启，无需额外 SOCKS 入站' : '';
+
+      const lanDirect = dom.optLanDirect.checked;
+      if (lanDirect) dom.optDirect.checked = true;
+      dom.optDirect.disabled = lanDirect;
+      dom.optDirectRow.classList.toggle('is-disabled', lanDirect);
+      dom.optDirectRow.title = lanDirect ? '内网直连需要 freedom 出站，已自动启用' : '';
+    }
+
+    function linkToConfig(silent) {
       try {
         const result = VlessConverter.buildXrayConfig(dom.linkInput.value, readOptions());
         const json = JSON.stringify(result.config, null, 2);
         dom.jsonBox.value = json;
         lastRemark = result.remark || '';
+        linkGenerated = true;
         renderMeta(result.meta);
         setStatus('已生成 · ' + (json.length / 1024).toFixed(1) + ' KB');
-        showAlert('success', '已生成 Xray 配置，可直接复制或下载');
+        if (!silent) showAlert('success', '已生成 Xray 配置，可直接复制或下载');
       } catch (err) {
         showAlert('error', err.message);
       }
+    }
+
+    function regenerate() {
+      if (!dom.linkInput.value.trim()) return;
+      if (!linkGenerated && dom.jsonBox.value.trim()) return;
+      linkToConfig(true);
     }
 
     function configToLink() {
@@ -703,6 +741,7 @@ if (typeof document !== 'undefined') {
         dom.linkInput.value = result.link;
         const remarkMeta = result.meta.find((item) => item.label === '备注');
         lastRemark = remarkMeta ? remarkMeta.value : '';
+        linkGenerated = false;
         renderMeta(result.meta);
         setStatus('已还原 VLESS 链接');
         showAlert('success', '已还原 VLESS 分享链接');
@@ -784,7 +823,7 @@ if (typeof document !== 'undefined') {
       applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
     });
 
-    dom.btnLinkToJson.addEventListener('click', linkToConfig);
+    dom.btnLinkToJson.addEventListener('click', () => linkToConfig());
     dom.btnJsonToLink.addEventListener('click', configToLink);
 
     dom.btnSample.addEventListener('click', () => {
@@ -794,11 +833,13 @@ if (typeof document !== 'undefined') {
 
     dom.btnClearLink.addEventListener('click', () => {
       dom.linkInput.value = '';
+      linkGenerated = false;
       dom.linkInput.focus();
     });
 
     dom.btnClearJson.addEventListener('click', () => {
       dom.jsonBox.value = '';
+      linkGenerated = false;
       dom.jsonStatus.textContent = '等待转换';
       dom.metaSection.hidden = true;
     });
@@ -807,6 +848,7 @@ if (typeof document !== 'undefined') {
       const link = dom.linkInput.value;
       dom.linkInput.value = dom.jsonBox.value;
       dom.jsonBox.value = link;
+      linkGenerated = false;
       dom.metaSection.hidden = true;
       dom.jsonStatus.textContent = '已交换内容';
     });
@@ -814,6 +856,15 @@ if (typeof document !== 'undefined') {
     dom.btnFormatJson.addEventListener('click', formatJson);
     dom.btnCopyJson.addEventListener('click', copyJson);
     dom.btnDownloadJson.addEventListener('click', downloadJson);
+
+    for (const key of ['optMixed', 'optSocks', 'optDirect', 'optBlock', 'optSniffing', 'optLanDirect']) {
+      dom[key].addEventListener('change', () => {
+        syncOptionState();
+        regenerate();
+      });
+    }
+
+    syncOptionState();
 
     dom.linkInput.addEventListener('keydown', (event) => {
       if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
