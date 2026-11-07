@@ -307,6 +307,16 @@ const VlessConverter = (function () {
 
     const inbounds = [];
 
+    if (opts.socks) {
+      inbounds.push({
+        tag: 'socks-in',
+        listen: '127.0.0.1',
+        port: 10808,
+        protocol: 'socks',
+        settings: { auth: 'noauth', udp: true }
+      });
+    }
+
     if (opts.mixed) {
       inbounds.push({
         tag: 'mixed-in',
@@ -314,14 +324,6 @@ const VlessConverter = (function () {
         listen: '127.0.0.1',
         protocol: 'mixed',
         settings: { udp: true }
-      });
-    } else if (opts.socks) {
-      inbounds.push({
-        tag: 'socks-in',
-        listen: '127.0.0.1',
-        port: 10808,
-        protocol: 'socks',
-        settings: { auth: 'noauth', udp: true }
       });
     }
 
@@ -690,10 +692,9 @@ if (typeof document !== 'undefined') {
     }
 
     function readOptions() {
-      const mixed = dom.optMixed.checked;
       return {
-        mixed,
-        socks: !mixed && dom.optSocks.checked,
+        mixed: dom.optMixed.checked,
+        socks: dom.optSocks.checked,
         direct: dom.optDirect.checked,
         block: dom.optBlock.checked,
         sniffing: dom.optSniffing.checked,
@@ -702,11 +703,6 @@ if (typeof document !== 'undefined') {
     }
 
     function syncOptionState() {
-      const mixed = dom.optMixed.checked;
-      dom.optSocks.disabled = mixed;
-      dom.optSocksRow.classList.toggle('is-disabled', mixed);
-      dom.optSocksRow.title = mixed ? '端口混合已开启，无需额外 SOCKS 入站' : '';
-
       const lanDirect = dom.optLanDirect.checked;
       if (lanDirect) dom.optDirect.checked = true;
       dom.optDirect.disabled = lanDirect;
