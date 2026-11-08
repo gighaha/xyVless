@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # install-xray-reality.sh
 # Debian 12/13 · 纯净 Xray-core
-# 入站: vless + reality @ 44300 (tcp)
+# 入站: vless + reality  (tcp)
 # 用法: sudo bash install-xray-reality.sh
 
 set -euo pipefail
 
-VLESS_PORT=44300
+VLESS_PORT=443
 XRAY_DIR="/usr/local/etc/xray"
 XRAY_BIN="/usr/local/bin/xray"
 SERVICE_FILE="/etc/systemd/system/xray.service"
@@ -31,7 +31,7 @@ echo "[*] 架构: $(uname -m) -> $ARCH"
 # ---------- 依赖 ----------
 echo "[*] 安装依赖..."
 apt-get update -y
-apt-get install -y curl unzip ca-certificates openssl
+apt-get install -y curl unzip ca-certificates
 
 # ---------- 下载 Xray ----------
 echo "[*] 获取最新版本..."
@@ -53,7 +53,8 @@ echo "[*] 生成 reality 密钥对..."
 KEYS=$("$XRAY_BIN" x25519)
 PRIVATE_KEY=$(echo "$KEYS" | grep -i 'Private' | awk '{print $NF}')
 PUBLIC_KEY=$(echo "$KEYS"  | grep -i 'Public'  | awk '{print $NF}')
-SHORT_ID=$(openssl rand -hex 8)
+# shortId: 8 字节随机 -> 16 位小写 hex（纯 /dev/urandom，零额外依赖）
+SHORT_ID=$(od -An -N8 -tx1 /dev/urandom | tr -d ' \n')
 UUID=$("$XRAY_BIN" uuid)
 
 echo "    privateKey: $PRIVATE_KEY"
