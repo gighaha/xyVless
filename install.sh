@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # install-xray-reality.sh
 # Debian 12/13 · 纯净 Xray-core
-# 入站: vless + reality @ 44300 (tcp)
+# 入站: vless + reality (tcp)
 # 用法: sudo bash install-xray-reality.sh
 
 set -euo pipefail
 
-VLESS_PORT=44300
+VLESS_PORT=443
 XRAY_DIR="/usr/local/etc/xray"
 XRAY_BIN="/usr/local/bin/xray"
 SERVICE_FILE="/etc/systemd/system/xray.service"
