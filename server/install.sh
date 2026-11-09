@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # install-xray-reality.sh
 # Debian 12/13 · 纯净 Xray-core
-# 入站: vless + reality (tcp)
+# 入站: vless + reality (tcp)，支持 UDP 转发（UDP over TCP）
 # 用法: sudo bash install-xray-reality.sh
 
 set -euo pipefail
@@ -94,12 +94,17 @@ cat > "$CONFIG" <<EOF
       },
       "sniffing": {
         "enabled": true,
-        "destOverride": [ "http", "tls", "quic" ]
+        "destOverride": [ "http", "tls" ],
+        "routeOnly": true
       }
     }
   ],
   "outbounds": [
-    { "protocol": "freedom", "tag": "direct" }
+    {
+      "protocol": "freedom",
+      "tag": "direct",
+      "settings": { "domainStrategy": "UseIP" }
+    }
   ]
 }
 EOF
@@ -140,6 +145,7 @@ cat <<RESULT
 ==================== 安装完成 ====================
 配置   : $CONFIG
 入站   : vless + reality  tcp  0.0.0.0:${VLESS_PORT}
+UDP    : 支持（UDP over TCP，随 VLESS 自动转发）
 
 --- 客户端信息 ---
 服务器   : ${SERVER_IP}
