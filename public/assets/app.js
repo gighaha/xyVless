@@ -4,7 +4,7 @@ const VlessConverter = (function () {
   const NETWORKS = new Set(['tcp', 'ws', 'grpc', 'http', 'httpupgrade', 'xhttp', 'kcp', 'quic']);
   const SECURITIES = new Set(['none', 'tls', 'reality', 'xtls']);
   const OPTION_DEFAULTS = {
-    mixed: true, socks: false, direct: false, block: false, sniffing: false, lanDirect: false, remoteDns: false
+    mixed: true, socks: false, direct: false, block: false, sniffing: false, lanDirect: false, dns: true, remoteDoh: false
   };
 
   function decodeComponent(value) {
@@ -342,15 +342,17 @@ const VlessConverter = (function () {
     }
 
     const config = {
-      log: { loglevel: 'warning' },
-      dns: { servers: ['https://1.1.1.1/dns-query', 'https://dns.google/dns-query'] },
-      inbounds,
-      outbounds
+      log: { loglevel: 'warning' }
     };
+    if (opts.dns) {
+      config.dns = { servers: ['https://1.1.1.1/dns-query', 'https://8.8.8.8/dns-query'] };
+    }
+    config.inbounds = inbounds;
+    config.outbounds = outbounds;
 
     const rules = [];
-    if (opts.remoteDns) {
-      rules.push({ type: 'field', port: '53', outboundTag: outbound.tag });
+    if (opts.remoteDoh) {
+      rules.push({ type: 'field', ip: ['1.1.1.1', '8.8.8.8'], outboundTag: outbound.tag });
     }
     if (opts.lanDirect) {
       rules.push(
@@ -637,7 +639,8 @@ if (typeof document !== 'undefined') {
       optBlock: document.getElementById('optBlock'),
       optSniffing: document.getElementById('optSniffing'),
       optLanDirect: document.getElementById('optLanDirect'),
-      optRemoteDns: document.getElementById('optRemoteDns')
+      optDns: document.getElementById('optDns'),
+      optRemoteDoh: document.getElementById('optRemoteDoh')
     };
 
     let alertTimer = 0;
@@ -704,7 +707,8 @@ if (typeof document !== 'undefined') {
         block: dom.optBlock.checked,
         sniffing: dom.optSniffing.checked,
         lanDirect: dom.optLanDirect.checked,
-        remoteDns: dom.optRemoteDns.checked
+        dns: dom.optDns.checked,
+        remoteDoh: dom.optRemoteDoh.checked
       };
     }
 
@@ -851,7 +855,7 @@ if (typeof document !== 'undefined') {
     dom.btnCopyJson.addEventListener('click', copyJson);
     dom.btnDownloadJson.addEventListener('click', downloadJson);
 
-    for (const key of ['optMixed', 'optSocks', 'optDirect', 'optBlock', 'optSniffing', 'optLanDirect', 'optRemoteDns']) {
+    for (const key of ['optMixed', 'optSocks', 'optDirect', 'optBlock', 'optSniffing', 'optLanDirect', 'optDns', 'optRemoteDoh']) {
       dom[key].addEventListener('change', () => {
         syncOptionState();
         regenerate();

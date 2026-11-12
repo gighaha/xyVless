@@ -121,10 +121,17 @@
         </span>
       </label>
       <label class="opt">
-        <input type="checkbox" id="optRemoteDns">
+        <input type="checkbox" id="optDns" checked>
         <span class="opt-text">
-          <strong>远端 DoT</strong>
-          <small>53 端口 DNS 经代理转发，由远端解析</small>
+          <strong>内置 DNS</strong>
+          <small>写入 dns.servers（DoH：1.1.1.1 / 8.8.8.8）</small>
+        </span>
+      </label>
+      <label class="opt">
+        <input type="checkbox" id="optRemoteDoh">
+        <span class="opt-text">
+          <strong>远端 DoH</strong>
+          <small>DoH 服务器（1.1.1.1 / 8.8.8.8）的查询走代理，由远端解析</small>
         </span>
       </label>
     </div>
