@@ -4,7 +4,7 @@ const VlessConverter = (function () {
   const NETWORKS = new Set(['tcp', 'ws', 'grpc', 'http', 'httpupgrade', 'xhttp', 'kcp', 'quic']);
   const SECURITIES = new Set(['none', 'tls', 'reality', 'xtls']);
   const OPTION_DEFAULTS = {
-    mixed: true, socks: false, direct: false, block: false, sniffing: false, lanDirect: false
+    mixed: true, socks: false, direct: false, block: false, sniffing: false, lanDirect: false, remoteDns: false
   };
 
   function decodeComponent(value) {
@@ -348,14 +348,18 @@ const VlessConverter = (function () {
       outbounds
     };
 
+    const rules = [];
+    if (opts.remoteDns) {
+      rules.push({ type: 'field', port: '53', outboundTag: outbound.tag });
+    }
     if (opts.lanDirect) {
-      config.routing = {
-        domainStrategy: 'IPIfNonMatch',
-        rules: [
-          { type: 'field', ip: ['geoip:private'], outboundTag: 'direct' },
-          { type: 'field', network: 'tcp,udp', outboundTag: outbound.tag }
-        ]
-      };
+      rules.push(
+        { type: 'field', ip: ['geoip:private'], outboundTag: 'direct' },
+        { type: 'field', network: 'tcp,udp', outboundTag: outbound.tag }
+      );
+    }
+    if (rules.length) {
+      config.routing = { domainStrategy: 'IPIfNonMatch', rules };
     }
 
     return { config, meta: buildMeta(parsed), remark: parsed.remark };
@@ -632,7 +636,8 @@ if (typeof document !== 'undefined') {
       optDirectRow: document.getElementById('optDirectRow'),
       optBlock: document.getElementById('optBlock'),
       optSniffing: document.getElementById('optSniffing'),
-      optLanDirect: document.getElementById('optLanDirect')
+      optLanDirect: document.getElementById('optLanDirect'),
+      optRemoteDns: document.getElementById('optRemoteDns')
     };
 
     let alertTimer = 0;
@@ -698,7 +703,8 @@ if (typeof document !== 'undefined') {
         direct: dom.optDirect.checked,
         block: dom.optBlock.checked,
         sniffing: dom.optSniffing.checked,
-        lanDirect: dom.optLanDirect.checked
+        lanDirect: dom.optLanDirect.checked,
+        remoteDns: dom.optRemoteDns.checked
       };
     }
 
@@ -845,7 +851,7 @@ if (typeof document !== 'undefined') {
     dom.btnCopyJson.addEventListener('click', copyJson);
     dom.btnDownloadJson.addEventListener('click', downloadJson);
 
-    for (const key of ['optMixed', 'optSocks', 'optDirect', 'optBlock', 'optSniffing', 'optLanDirect']) {
+    for (const key of ['optMixed', 'optSocks', 'optDirect', 'optBlock', 'optSniffing', 'optLanDirect', 'optRemoteDns']) {
       dom[key].addEventListener('change', () => {
         syncOptionState();
         regenerate();
