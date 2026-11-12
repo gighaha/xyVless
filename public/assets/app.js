@@ -343,7 +343,7 @@ const VlessConverter = (function () {
 
     const config = {
       log: { loglevel: 'warning' },
-      dns: { servers: ['1.1.1.1', '8.8.8.8'] },
+      dns: { servers: ['https://1.1.1.1/dns-query', 'https://dns.google/dns-query'] },
       inbounds,
       outbounds
     };
