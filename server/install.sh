@@ -65,7 +65,11 @@ echo "    uuid      : $UUID"
 mkdir -p "$XRAY_DIR"
 cat > "$CONFIG" <<EOF
 {
-  "log": { "loglevel": "warning" },
+"log": {
+  "access": "none",
+  "error": "none",
+  "loglevel": "warning"
+},
   "inbounds": [
     {
       "tag": "vless-reality-in",
